@@ -15,7 +15,7 @@
             <Label Content="test"/>
             <ss:NumericBox  Minimum="-100" Maximum="25.00" DecimalPlaces="2" input:InputMethod.IsInputMethodEnabled="False"/>
             <ss:NumTextBox NumType="Decimal" MaxValue="100" MinValue="-100"/>
-            <ss:NumericTextBox IsDecimalAllowed="True" MaxLength="20" Scale="2" IsEnabled="True" input:InputMethod.IsInputMethodEnabled="False"/>
+            <ss:NumericTextBox MinValue="1" MaxValue="15" IsDecimalAllowed="True" MaxLength="20" Scale="2" IsEnabled="True" input:InputMethod.IsInputMethodEnabled="False"/>
         </StackPanel>
     </Grid>
 </Window>

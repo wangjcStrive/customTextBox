@@ -32,6 +32,22 @@ namespace WpfCustomControlLibrary1
         public static readonly DependencyProperty ScaleProperty =
             DependencyProperty.Register("Scale", typeof(int), typeof(NumericTextBox), new PropertyMetadata(0));
 
+        public double MaxValue
+        {
+            get { return (double)GetValue(MaxValueProperty); }
+            set { SetValue(MaxValueProperty, value); }
+        }
+        public static readonly DependencyProperty MaxValueProperty = DependencyProperty.Register("MaxValueProperty", typeof(double), typeof(NumericTextBox), new FrameworkPropertyMetadata(
+            new PropertyChangedCallback(CheckProperty)));
+
+
+        public double MinValue
+        {
+            get { return (double)GetValue(MinValueProperty); }
+            set { SetValue(MinValueProperty, value); }
+        }
+        public static readonly DependencyProperty MinValueProperty = DependencyProperty.Register("MinValueProperty", typeof(double), typeof(NumericTextBox), new FrameworkPropertyMetadata(
+            new PropertyChangedCallback(CheckProperty)));
         #endregion
 
         //TODO. wangjc. why static constructer?
@@ -45,11 +61,13 @@ namespace WpfCustomControlLibrary1
             if (!e.Handled)
             {
                 e.Handled = !MaxLengthReached(e);
+                if (!e.Handled)
+                    e.Handled = !checkMinMax(e);
             }
             base.OnPreviewTextInput(e);
         }
 
-        bool AreAllValidNumericChars(string str)
+        private bool AreAllValidNumericChars(string str)
         {
             if (string.IsNullOrEmpty(DecimalSeparator))
                 DecimalSeparator = ".";
@@ -71,7 +89,7 @@ namespace WpfCustomControlLibrary1
             return ret;
         }
 
-        bool MaxLengthReached(TextCompositionEventArgs e)
+        private bool MaxLengthReached(TextCompositionEventArgs e)
         {
             TextBox textBox = (TextBox)e.OriginalSource;
             int precision = textBox.MaxLength - Scale - 2;
@@ -87,6 +105,46 @@ namespace WpfCustomControlLibrary1
             {
                 return false;
             }
+        }
+
+        private bool checkMinMax(TextCompositionEventArgs e)
+        {
+            bool checkResult = false;
+            TextBox textBox = (TextBox)e.OriginalSource;
+            string textToValidate = textBox.Text.Insert(textBox.CaretIndex, e.Text).Replace("-", "");
+
+            if (IsDecimalAllowed)
+            {
+                double valueToCheck;
+                if(double.TryParse(textToValidate, out valueToCheck))
+                {
+                    if (valueToCheck < MinValue || valueToCheck > MaxValue)
+                        checkResult = false;
+                    else
+                        checkResult = true;
+                }
+            }
+            else
+            {
+                long valueToCheck;
+                if(long.TryParse(textToValidate, out valueToCheck))
+                {
+                    //TODO. wangjc. compare int and double. conver double to int?
+                    if (valueToCheck < MinValue || valueToCheck > MaxValue)
+                        checkResult = false;
+                    else
+                        checkResult = true;
+                }
+            }
+            return checkResult;
+        }
+
+        //TODO.wangjc. check this property callback.
+        private static void CheckProperty(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            NumericTextBox ntb = d as NumericTextBox;
+            if (ntb.MaxValue < ntb.MinValue)
+                ntb.MaxValue = ntb.MinValue;
         }
     }
 }
